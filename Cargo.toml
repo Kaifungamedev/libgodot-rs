@@ -1,0 +1,43 @@
+[package]
+name = "libgodot"
+version = "0.1.0"
+edition = "2024"
+
+repository = "https://github.com/Kaifungamedev/libgodot-rs.git"
+# Marks this as the one crate in the graph that owns the `godot` native library,
+# so two copies can never be linked into the same binary.
+links = "godot"
+description = "Embed the Godot engine in Rust through libgodot"
+license = "Apache-2.0"
+readme = "README.md"
+# The engine checkout is a symlink to a local tree, never part of the package.
+exclude = ["/godot"]
+
+[features]
+# Off by default: the engine is linked statically unless this is enabled, in
+# which case the crate links against libgodot.so / .dylib / .dll instead. The
+# shared library then has to be findable by the dynamic loader at run time
+# (LD_LIBRARY_PATH, rpath, ...).
+dynamic-link = []
+
+# When the source tree's bin/ has no library for this build, run scons there
+# to build one for the current target (static or shared to match the link
+# mode; template_debug or template_release to match the Cargo profile, unless
+# GODOT_TARGET says otherwise). SCONSFLAGS is passed through and wins over
+# those defaults; SCONS picks the executable. The first build takes a long
+# time; later builds reuse the library.
+build-godot = []
+
+# Which Godot to shallow-clone when no engine source is found (GODOT_SOURCE_PATH
+# unset and ./godot missing). Pick at most one; with none, `godot-stable` is
+# used. The GODOT_VERSION env var overrides these and also accepts any tag or
+# branch name, e.g. GODOT_VERSION=4.6.2-stable.
+#
+# libgodot first shipped in 4.6, so there is nothing older to pick.
+godot-latest = [] # master
+godot-stable = [] # newest X.Y[.Z]-stable tag
+godot-4-6 = []    # newest 4.6.x-stable, likewise for the rest
+godot-4-7 = []
+
+[build-dependencies]
+bindgen = "0.71.0"
